@@ -12,11 +12,15 @@ HOW TO USE
 
 WHAT'S INSIDE
 -------------
-index.html          The full site (opening curtain reveal, hero, couple,
-                     date, ceremony, reception, family, gallery, closing).
-assets/hero.jpg      Portrait decoration photo used in the hero + gallery.
-assets/soft-bg.jpg   Softened/blurred variant used as a texture background.
-assets/floral-strip.jpg   Cropped floral detail used in the gallery.
+index.html                The full site (opening curtain reveal, hero,
+                           couple, date, ceremony, reception, family,
+                           gallery, closing).
+assets/hero.jpg            Portrait decoration photo used in the hero background.
+assets/soft-bg.jpg         Softened/blurred variant used in the closing section.
+assets/og-image.jpg        1200x630 preview image used when the link is
+                            shared on WhatsApp/social media/iMessage etc.
+assets/music.mp3            The wedding song, tap the note icon (bottom-right)
+                             to play/pause it — never autoplays.
 
 NOTES
 -----
@@ -27,6 +31,7 @@ NOTES
   since no year was provided.
 - The map buttons link to Google Maps searches for "St. Ignatius Church"
   and "Thirumala" — no address was invented.
-- The music toggle (bottom-right) plays a soft generated ambient tone
-  (via Tone.js, loaded from a CDN) — no real audio track was supplied,
-  so there's nothing to swap in unless you'd like one added.
+- Social-share preview (Open Graph) tags are set in the <head> of
+  index.html, pointing to https://benz-liza.vercel.app/ and
+  https://benz-liza.vercel.app/assets/og-image.jpg. If you deploy the
+  site at a different URL, update those two meta values to match.

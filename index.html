@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Benz &amp; Liza — December 29</title>
+<meta name="description" content="Together with their families, Benz Romar Miranda and Liza Stanly invite you to their wedding on December 29.">
+<link rel="canonical" href="https://benz-liza.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Benz &amp; Liza — December 29">
+<meta property="og:description" content="Together with their families, Benz Romar Miranda and Liza Stanly invite you to their wedding on December 29.">
+<meta property="og:url" content="https://benz-liza.vercel.app/">
+<meta property="og:image" content="https://benz-liza.vercel.app/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Benz &amp; Liza — December 29">
+<meta name="twitter:description" content="Together with their families, Benz Romar Miranda and Liza Stanly invite you to their wedding on December 29.">
+<meta name="twitter:image" content="https://benz-liza.vercel.app/assets/og-image.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -322,8 +335,9 @@ img{max-width:100%; display:block;}
 #closing .final-date{ margin-top:20px; font-size:.75rem; letter-spacing:.32em; text-transform:uppercase; color:var(--ink-soft); }
 
 footer.site-footer{
-  text-align:center; padding:34px 20px; font-size:.68rem; letter-spacing:.2em;
-  color:var(--ink-soft); text-transform:uppercase; background:var(--ivory);
+  text-align:center; padding:38px 20px; font-size:.82rem; font-weight:500; letter-spacing:.22em;
+  color:var(--ink); text-transform:uppercase; background:var(--ivory);
+  border-top:1px solid rgba(143,177,206,.3);
 }
 
 /* ============ MUSIC TOGGLE ============ */
@@ -521,17 +535,7 @@ footer.site-footer{
     </div>
   </section>
 
-  <!-- GALLERY -->
-  <section id="gallery" class="section">
-    <div class="section-inner reveal">
-      <div class="eyebrow">A Glimpse Of The Day</div>
-    </div>
-    <div class="gallery-grid" style="max-width:1000px; margin:44px auto 0; padding:0 20px;">
-      <figure class="g1 reveal"><img src="assets/floral-strip.jpg" alt="Blue and white floral wedding decor detail"></figure>
-      <figure class="g2 reveal reveal-d1"><img src="assets/soft-bg.jpg" alt="Powder blue draped wedding arch detail"></figure>
-      <figure class="g3 reveal reveal-d2"><img src="assets/hero.jpg" alt="Wedding ceremony floral backdrop" style="object-position:top;"></figure>
-    </div>
-  </section>
+  <!-- GALLERY (disabled — "A Glimpse Of The Day" section removed per request) -->
 
   <!-- CLOSING -->
   <section id="closing">
@@ -551,8 +555,11 @@ footer.site-footer{
   <footer class="site-footer">Benz &amp; Liza — December 29</footer>
 </div>
 
+<!-- WEDDING SONG -->
+<audio id="wedding-song" loop preload="auto" src="assets/music.mp3"></audio>
+
 <!-- MUSIC TOGGLE -->
-<button id="music-toggle" class="muted" type="button" aria-label="Toggle ambient music" title="Ambient music">
+<button id="music-toggle" class="muted" type="button" aria-label="Toggle wedding song" title="Play song">
   <div class="bars"><span></span><span></span><span></span></div>
 </button>
 
@@ -618,57 +625,34 @@ footer.site-footer{
   }, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
   revealEls.forEach(function(el){ io.observe(el); });
 
-  // ---- Ambient music (Tone.js, generated pad, muted by default) ----
+  // ---- Wedding song ----
   var musicBtn = document.getElementById('music-toggle');
-  var audioStarted = false;
+  var song = document.getElementById('wedding-song');
   var playing = false;
-  var pad, loop;
 
-  function ensureAudio(cb){
-    if(audioStarted){ cb(); return; }
-    var s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js';
-    s.onload = function(){
-      audioStarted = true;
-      try{
-        pad = new Tone.PolySynth(Tone.Synth, {
-          oscillator:{ type:'sine' },
-          envelope:{ attack:2.2, decay:1.5, sustain:0.6, release:4 }
-        }).toDestination();
-        pad.volume.value = -20;
-        var chords = [['C4','E4','G4'], ['A3','C4','E4'], ['F3','A3','C4'], ['G3','B3','D4']];
-        var i = 0;
-        loop = new Tone.Loop(function(time){
-          pad.triggerAttackRelease(chords[i % chords.length], '2n', time);
-          i++;
-        }, '4n').start(0);
-        Tone.Transport.bpm.value = 32;
-      }catch(err){ console.warn('Ambience unavailable', err); }
-      cb();
-    };
-    s.onerror = function(){ cb(); };
-    document.head.appendChild(s);
+  function playSong(){
+    if(!song || playing) return;
+    song.play().then(function(){
+      playing = true;
+      musicBtn.classList.remove('muted');
+      try{ localStorage.setItem('bl_music', 'on'); }catch(e){}
+    }).catch(function(err){ console.warn('Playback blocked', err); });
+  }
+  function pauseSong(){
+    if(!song || !playing) return;
+    song.pause();
+    playing = false;
+    musicBtn.classList.add('muted');
+    try{ localStorage.setItem('bl_music', 'off'); }catch(e){}
   }
 
-  function startAmbience(){ /* preload only; playback still requires explicit toggle */ }
+  // Tapping "Enter the Celebration" is a genuine user gesture, so the
+  // song can start right there without triggering the browser's
+  // autoplay block.
+  function startAmbience(){ playSong(); }
 
   musicBtn.addEventListener('click', function(){
-    ensureAudio(function(){
-      if(typeof Tone === 'undefined'){ return; }
-      Tone.start().then(function(){
-        if(!playing){
-          Tone.Transport.start();
-          playing = true;
-          musicBtn.classList.remove('muted');
-          try{ localStorage.setItem('bl_music', 'on'); }catch(e){}
-        } else {
-          Tone.Transport.pause();
-          playing = false;
-          musicBtn.classList.add('muted');
-          try{ localStorage.setItem('bl_music', 'off'); }catch(e){}
-        }
-      });
-    });
+    if(playing){ pauseSong(); } else { playSong(); }
   });
 })();
 </script>
