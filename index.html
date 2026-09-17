@@ -158,9 +158,15 @@ img{max-width:100%; display:block;}
 /* ============ HERO ============ */
 #hero{
   position:relative; min-height:100svh; display:flex; align-items:flex-end;
-  background-size:cover; background-position:center 30%;
-  isolation:isolate;
+  overflow:hidden; isolation:isolate;
 }
+.parallax-layer{ position:absolute; inset:-8% 0; will-change:transform; }
+.hero-bg{
+  position:absolute; inset:0; background-size:cover; background-position:center 30%;
+  animation:kenburns 26s ease-in-out infinite alternate; will-change:transform;
+  transform-origin:center 38%;
+}
+@keyframes kenburns{ 0%{ transform:scale(1); } 100%{ transform:scale(1.09); } }
 #hero::before{
   content:''; position:absolute; inset:0; z-index:1;
   background:linear-gradient(180deg, rgba(24,34,44,.32) 0%, rgba(24,34,44,.12) 26%, rgba(24,34,44,.22) 55%, rgba(16,22,29,.72) 100%);
@@ -263,7 +269,10 @@ img{max-width:100%; display:block;}
   position:relative; background:var(--white);
   border:1px solid rgba(143,177,206,.35);
   border-radius:6px; padding:56px 34px; box-shadow:var(--shadow-soft);
+  transition:transform .5s var(--ease), box-shadow .5s var(--ease);
+  will-change:transform;
 }
+.event-card:hover{ box-shadow:0 26px 70px rgba(79,105,130,.2); }
 .event-card .eyebrow{ margin-bottom:6px; }
 .event-card h2{
   font-family:'Cormorant Garamond', serif; font-weight:500;
@@ -321,6 +330,7 @@ img{max-width:100%; display:block;}
 /* ============ CLOSING ============ */
 #closing{
   position:relative; background:var(--ivory); text-align:center; padding-bottom:150px;
+  overflow:hidden;
 }
 #closing .bg-soft{
   position:absolute; inset:0; background-size:cover; background-position:center;
@@ -338,6 +348,19 @@ footer.site-footer{
   text-align:center; padding:38px 20px; font-size:.82rem; font-weight:500; letter-spacing:.22em;
   color:var(--ink); text-transform:uppercase; background:var(--ivory);
   border-top:1px solid rgba(143,177,206,.3);
+}
+
+/* ============ PETAL BURST ============ */
+.petal-burst{ position:fixed; inset:0; pointer-events:none; z-index:1200; overflow:hidden; }
+.petal{
+  position:absolute; top:-6%; border-radius:60% 0 60% 0; opacity:0;
+  animation-name:petal-fall; animation-timing-function:cubic-bezier(.3,.1,.4,1); animation-fill-mode:forwards;
+  box-shadow:0 3px 10px rgba(79,105,130,.18);
+}
+@keyframes petal-fall{
+  0%{ transform:translate(0,0) rotate(0deg); opacity:0; }
+  8%{ opacity:.95; }
+  100%{ transform:translate(var(--drift), 118vh) rotate(280deg); opacity:0; }
 }
 
 /* ============ MUSIC TOGGLE ============ */
@@ -418,7 +441,10 @@ footer.site-footer{
 <div id="site">
 
   <!-- HERO -->
-  <section id="hero" style="background-image:url('assets/hero.jpg');">
+  <section id="hero">
+    <div class="parallax-layer" data-parallax="0.18">
+      <div class="hero-bg" style="background-image:url('assets/hero.jpg');"></div>
+    </div>
     <div class="glow g1"></div>
     <div class="glow g2"></div>
     <div class="hero-content">
@@ -539,7 +565,9 @@ footer.site-footer{
 
   <!-- CLOSING -->
   <section id="closing">
-    <div class="bg-soft" style="background-image:url('assets/soft-bg.jpg');"></div>
+    <div class="parallax-layer" data-parallax="0.12" style="inset:-10% 0;">
+      <div class="bg-soft" style="background-image:url('assets/soft-bg.jpg');"></div>
+    </div>
     <div class="bg-overlay"></div>
     <div class="section" style="padding-bottom:0;">
       <div class="content reveal">
@@ -595,6 +623,8 @@ footer.site-footer{
 
 <script>
 (function(){
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   // ---- Gate / opening interaction ----
   var html = document.documentElement;
   html.classList.add('locked');
@@ -605,6 +635,7 @@ footer.site-footer{
     if(gate.classList.contains('opening')) return;
     gate.classList.add('opening');
     startAmbience();
+    petalBurst();
     setTimeout(function(){
       gate.classList.add('hidden');
       html.classList.remove('locked');
@@ -654,6 +685,69 @@ footer.site-footer{
   musicBtn.addEventListener('click', function(){
     if(playing){ pauseSong(); } else { playSong(); }
   });
+
+  // ---- Parallax on scroll ----
+  if(!reducedMotion){
+    var parallaxLayers = document.querySelectorAll('.parallax-layer');
+    var pTicking = false;
+    function updateParallax(){
+      parallaxLayers.forEach(function(el){
+        var section = el.closest('section');
+        if(!section) return;
+        var rect = section.getBoundingClientRect();
+        var factor = parseFloat(el.getAttribute('data-parallax')) || 0.15;
+        var offset = rect.top * factor;
+        el.style.transform = 'translateY(' + (-offset) + 'px)';
+      });
+      pTicking = false;
+    }
+    window.addEventListener('scroll', function(){
+      if(!pTicking){ requestAnimationFrame(updateParallax); pTicking = true; }
+    }, { passive:true });
+    updateParallax();
+  }
+
+  // ---- Petal burst (on Enter) ----
+  function petalBurst(){
+    if(reducedMotion) return;
+    var container = document.createElement('div');
+    container.className = 'petal-burst';
+    document.body.appendChild(container);
+    var colors = ['#ffffff', '#DCEAF3', '#C4D9EA', '#F7F3EC'];
+    var count = 14;
+    for(var i = 0; i < count; i++){
+      var p = document.createElement('div');
+      p.className = 'petal';
+      var size = 9 + Math.random() * 9;
+      var drift = (Math.random() * 70 - 35);
+      p.style.left = (Math.random() * 100) + 'vw';
+      p.style.width = size + 'px';
+      p.style.height = (size * 0.78) + 'px';
+      p.style.background = colors[i % colors.length];
+      p.style.animationDelay = (Math.random() * 0.7) + 's';
+      p.style.animationDuration = (3.4 + Math.random() * 2) + 's';
+      p.style.setProperty('--drift', drift + 'px');
+      container.appendChild(p);
+    }
+    setTimeout(function(){ container.remove(); }, 6500);
+  }
+
+  // ---- Card tilt (hover-capable desktop only) ----
+  if(!reducedMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches){
+    document.querySelectorAll('.event-card').forEach(function(card){
+      card.addEventListener('mousemove', function(e){
+        var rect = card.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        var y = e.clientY - rect.top;
+        var rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 5;
+        var rotateX = -((y - rect.height / 2) / (rect.height / 2)) * 5;
+        card.style.transform = 'perspective(900px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+      });
+      card.addEventListener('mouseleave', function(){
+        card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg)';
+      });
+    });
+  }
 })();
 </script>
 
